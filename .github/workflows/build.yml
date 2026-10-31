@@ -1,0 +1,22 @@
+name: Build APK
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -q FireCleaner.zip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: cd FireCleaner && bash ./gradlew assembleRelease --no-daemon
+      - run: cp FireCleaner/app/build/outputs/apk/release/app-release.apk FireCleaner.apk
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          files: FireCleaner.apk
+          make_latest: true
