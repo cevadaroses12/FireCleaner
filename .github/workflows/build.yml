@@ -4,16 +4,20 @@ permissions:
   contents: write
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - run: unzip -q FireCleaner.zip
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - name: Unzip project
+        run: python3 -m zipfile -e FireCleaner.zip .
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
-      - run: cd FireCleaner && bash ./gradlew assembleRelease --no-daemon
+      - name: Build APK
+        run: |
+          cd FireCleaner
+          echo "sdk.dir=${ANDROID_HOME:-$ANDROID_SDK_ROOT}" > local.properties
+          bash ./gradlew assembleRelease --no-daemon --stacktrace
       - run: cp FireCleaner/app/build/outputs/apk/release/app-release.apk FireCleaner.apk
       - uses: softprops/action-gh-release@v2
         with:
